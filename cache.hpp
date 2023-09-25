@@ -8,27 +8,26 @@ namespace caches {
     template <typename T, typename keyT = int> class cache_t {
         private:
             size_t sz_;
-            using freq = int;
+            T (*slow_get_page)(keyT key);
             struct elt_cache_t {
                 T data;
-                keyT key;
+                keyT key_elt;
                 int freq;
             };
-            
             std::list<elt_cache_t> cache_;
             using ListIt = typename std::list<elt_cache_t>::iterator;
             std::unordered_map<keyT, ListIt> hash_;
         public:
-            cache_t(size_t size_cache) : sz_(size_cache) {}
+            cache_t(size_t size_cache, T (*func)(keyT key)) : sz_(size_cache), slow_get_page(func) {}
 
             bool full() const { return (cache_.size() == sz_); }
 
-            template <typename F, typename keyType = int> bool lookup_update(keyType key, F slow_get_page) {
+            bool lookup_update(keyT key) {
                 auto hit = hash_.find(key);
 
                 if (hit == hash_.end()) { //misshit
                     if (full()) {
-                        hash_.erase(cache_.front()->key);
+                        hash_.erase(cache_.begin()->key_elt);
                         cache_.pop_front();
                     }
                     cache_.emplace_front(slow_get_page(key), key, 1);
@@ -37,11 +36,10 @@ namespace caches {
                 }
 
                 auto eltit = hit->second;  //iterator of hit elt
-                //++(std::get<3>(*eltit));
                 ++(eltit->freq);
-                if (eltit != cache_.back()) {
-                    while (eltit->third >= (std::next(eltit)->third)) {
-                        cache_.splice(std::next(eltit), cache_, eltit, std::next(eltit));
+                if (eltit != std::prev(cache_.end())) {
+                    while (eltit->freq >= (std::next(eltit))->freq) {
+                        cache_.splice(std::next(std::next(eltit)), cache_, eltit, std::next(eltit));
                     }
                 }
                 return true;

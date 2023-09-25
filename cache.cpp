@@ -10,7 +10,7 @@ int main()
 
     std::cin >> sz >> sz_data;
 
-    caches::cache_t<int> cache{sz};
+    caches::cache_t<int> cache{sz, slow_get_page_int};
 
     //cache.create_list();
     //cache.create_hash();
@@ -18,7 +18,7 @@ int main()
     for (int i = 0; i < sz_data; ++i) {
         int key;
         std::cin >> key;
-        if (cache.lookup_update(key, slow_get_page_int))
+        if (cache.lookup_update(key))
             ++hits;
     }
     
