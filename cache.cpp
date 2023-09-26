@@ -19,13 +19,15 @@ int main()
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); //Выкидываем все что ввел пользователь до конца строки
             std::cin.clear();  //Убираем флаг ошибки. Теперь состояние потока снова good
             std::cout << "ERROR!" << std::endl;
-            continue;
+            break;
         }
         if (cache.lookup_update(key))
             ++hits;
     }
 
     cache.show_cache();
+
+    std::cout << hits << std::endl;
     
     return 0;
 }

@@ -40,7 +40,8 @@ namespace caches {
                 (eltit->freq)++;
                 if (eltit != std::prev(cache_.end())) {
                     while (eltit->freq >= (std::next(eltit))->freq) {
-                        cache_.splice(std::next(std::next(eltit)), cache_, eltit, std::next(eltit));
+                        //std::iter_swap(eltit, std::next(eltit));
+                        cache_.splice(std::next(eltit, 2), cache_, eltit, std::next(eltit));
                     }
                 }
                 return true;
@@ -52,33 +53,6 @@ namespace caches {
                     std::cout << it->key_elt << " " << it->freq << std::endl; 
                 std::cout << std::endl;
             }
-
-            #if 0
-            void create_hash() {
-                int i = 0;
-                auto It = cache_.begin();
-                for (i = 30; It != cache_.end(); ++i, ++It) {
-                    hash_.emplace(i, It);
-                }
-            }
-
-            
-            void create_list() {
-                int i = 0;
-                for (i = 0; i < sz_; ++i) {
-                    T data;
-                    std::cin >> data;
-                    cache_.emplace_back(slow_get_page_int(data), data, 1);
-                }
-            }
-
-            void show_hash() const {
-                std::cout << "Hash: " << std::endl;
-                for (auto It = hash_.begin(); It != hash_.end(); ++It)
-                    std::cout << It->first << std::endl;
-                //std::cout << hash_[0] << std::endl;
-            };
-            #endif
 
     }; 
 
