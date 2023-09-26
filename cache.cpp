@@ -12,15 +12,20 @@ int main()
 
     caches::cache_t<int> cache{sz, slow_get_page_int};
 
-    //cache.create_list();
-    //cache.create_hash();
-
     for (int i = 0; i < sz_data; ++i) {
         int key;
         std::cin >> key;
+        if(!std::cin){
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); //Выкидываем все что ввел пользователь до конца строки
+            std::cin.clear();  //Убираем флаг ошибки. Теперь состояние потока снова good
+            std::cout << "ERROR!" << std::endl;
+            continue;
+        }
         if (cache.lookup_update(key))
             ++hits;
     }
+
+    cache.show_cache();
     
     return 0;
 }

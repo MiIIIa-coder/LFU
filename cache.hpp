@@ -30,13 +30,14 @@ namespace caches {
                         hash_.erase(cache_.begin()->key_elt);
                         cache_.pop_front();
                     }
-                    cache_.emplace_front(slow_get_page(key), key, 1);
+                    elt_cache_t elt {slow_get_page(key), key, 1};
+                    cache_.emplace_front(elt);
                     hash_.emplace(key, cache_.begin());
                     return false;
                 }
 
                 auto eltit = hit->second;  //iterator of hit elt
-                ++(eltit->freq);
+                (eltit->freq)++;
                 if (eltit != std::prev(cache_.end())) {
                     while (eltit->freq >= (std::next(eltit))->freq) {
                         cache_.splice(std::next(std::next(eltit)), cache_, eltit, std::next(eltit));
@@ -45,7 +46,14 @@ namespace caches {
                 return true;
             }
 
-            /*
+            void show_cache() const {
+                std::cout << "Cache: " << std::endl;
+                for (auto it = cache_.begin(); it != cache_.end(); it++)
+                    std::cout << it->key_elt << " " << it->freq << std::endl; 
+                std::cout << std::endl;
+            }
+
+            #if 0
             void create_hash() {
                 int i = 0;
                 auto It = cache_.begin();
@@ -69,14 +77,8 @@ namespace caches {
                 for (auto It = hash_.begin(); It != hash_.end(); ++It)
                     std::cout << It->first << std::endl;
                 //std::cout << hash_[0] << std::endl;
-            }
-
-            void show_cache() const {
-                std::cout << "Cache: " << std::endl;
-                copy (cache_.begin(), cache_.end(), std::ostream_iterator<int>(std::cout, " ")); 
-                std::cout << std::endl;
             };
-            */
+            #endif
 
     }; 
 
