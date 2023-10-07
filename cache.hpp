@@ -5,6 +5,7 @@
 
 namespace caches {
 
+    /*LFU cache*/
     template <typename T, typename keyT = int> class cache_t {
         private:
             size_t sz_;
@@ -54,6 +55,90 @@ namespace caches {
                 std::cout << std::endl;
             }
 
-    }; 
+    };
+
+    /*ideal cache*/
+    template<typename T, typename KeyT = int> class id_cache {
+    private:
+        int cache_hits;
+        int size_data_;
+        size_t sz_cache_;
+        KeyT* data_array;
+        T (*slow_get_page)(KeyT key);
+        struct elt_id_cache
+        {
+            T data;
+            KeyT key;
+            int next_data_node;
+        };
+
+        std::list<elt_id_cache> id_cache_;
+        using listIt = typename std::list<elt_id_cache>::iterator;
+        
+    public:
+        id_cache(int size_data, size_t sz_cache, T (*func)(KeyT key)) : size_data_(size_data), sz_cache_(sz_cache), slow_get_page(func) {
+
+            data_array = new KeyT[size_data_];
+            for (int i = 0; i < size_data_; ++i) {
+                std::cin >> *(data_array + i);
+            } 
+        }
+        ~id_cache() {
+            delete [] data_array;
+        }
+
+        bool full() const { return (id_cache_.size() == sz_cache_); }
+
+        int find_next_data_node(int position, KeyT key) const {
+            int next_data_node = 1;
+
+            for (int i = position + 1; i < size_data_; ++i, ++next_data_node) {
+                if (key == *(data_array + i))
+                    break;
+            } 
+
+            return next_data_node;
+        }
+
+        void update_cache_info() {   //decrement next_data_node in each elt in cache
+            for (listIt It = id_cache_.begin(); It != id_cache_.end(); ++It) {
+                --(It->next_data_node);
+            }
+        }
+
+        /*remove first elt and add new elt in right position*/
+        void update_cache(int position) {                       
+            elt_id_cache elt {slow_get_page(*(data_array + position)), 
+            *(data_array + position), find_next_data_node(position, *(data_array + position))};
+            id_cache_.emplace_front(elt);
+            id_cache_.sort([](const elt_id_cache& first, const elt_id_cache& second)  
+            {return first.next_data_node > second.next_data_node;});  
+        }
+
+        int count_hits() {
+            elt_id_cache elt {slow_get_page(*data_array), 
+            *data_array, find_next_data_node(0, *data_array)}; 
+            id_cache_.emplace_front(elt);   //add first elt in list
+
+            for (int i = 1; i < size_data_; ++i) {
+                update_cache_info();
+                if (*(data_array + i) == id_cache_.begin()->key) {  //cache hit
+                    ++cache_hits;
+                    id_cache_.pop_front();
+                    update_cache(i);
+                } else {                                            //misshit
+                    if (full()) {
+                        id_cache_.pop_front();
+                        update_cache(i);
+                    } else {
+                        update_cache(i);
+                    }
+                }
+            }
+
+            return cache_hits;
+        }
+    };
+     
 
 };

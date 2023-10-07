@@ -27,7 +27,10 @@ int main()
 
     cache.show_cache();
 
-    std::cout << hits << std::endl;
+    std::cout << "Hits of LFU: " << hits << std::endl;
+
+    caches::id_cache<int> ideal_cache{sz_data, sz, slow_get_page_int};
+    std::cout << "Hits of ideal cache: " << ideal_cache.count_hits() << std::endl;
     
     return 0;
 }
