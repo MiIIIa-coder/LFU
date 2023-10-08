@@ -78,9 +78,16 @@ namespace caches {
     public:
         id_cache(int size_data, size_t sz_cache, T (*func)(KeyT key)) : size_data_(size_data), sz_cache_(sz_cache), slow_get_page(func) {
 
+            cache_hits = 0;
             data_array = new KeyT[size_data_];
             for (int i = 0; i < size_data_; ++i) {
                 std::cin >> *(data_array + i);
+                if(!std::cin) {
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); //Выкидываем все что ввел пользователь до конца строки
+                    std::cin.clear();  //Убираем флаг ошибки. Теперь состояние потока снова good
+                    std::cout << "ERROR!" << std::endl;
+                    break;
+                }
             } 
         }
         ~id_cache() {
@@ -88,6 +95,8 @@ namespace caches {
         }
 
         bool full() const { return (id_cache_.size() == sz_cache_); }
+
+        KeyT get_key(int position) const { return *(data_array + position); }
 
         int find_next_data_node(int position, KeyT key) const {
             int next_data_node = 1;
@@ -100,7 +109,8 @@ namespace caches {
             return next_data_node;
         }
 
-        void update_cache_info() {   //decrement next_data_node in each elt in cache
+        /*decrement next_data_node in each elt in cache*/
+        void update_cache_info() {   
             for (listIt It = id_cache_.begin(); It != id_cache_.end(); ++It) {
                 --(It->next_data_node);
             }
@@ -111,8 +121,13 @@ namespace caches {
             elt_id_cache elt {slow_get_page(*(data_array + position)), 
             *(data_array + position), find_next_data_node(position, *(data_array + position))};
             id_cache_.emplace_front(elt);
-            id_cache_.sort([](const elt_id_cache& first, const elt_id_cache& second)  
-            {return first.next_data_node > second.next_data_node;});  
+            //id_cache_.sort([](const elt_id_cache& first, const elt_id_cache& second)  
+            //{return first.next_data_node >= second.next_data_node;});
+            listIt new_elt = id_cache_.begin();
+            listIt next_elt = std::next(new_elt); //for debugging
+            while (new_elt->next_data_node <= std::next(new_elt)->next_data_node && new_elt != std::prev(id_cache_.end())) {
+                id_cache_.splice(std::next(new_elt, 2), id_cache_, new_elt, std::next(new_elt));
+            }     
         }
 
         int count_hits() {
@@ -122,9 +137,9 @@ namespace caches {
 
             for (int i = 1; i < size_data_; ++i) {
                 update_cache_info();
-                if (*(data_array + i) == id_cache_.begin()->key) {  //cache hit
+                if (*(data_array + i) == std::prev(id_cache_.end())->key) {  //cache hit
                     ++cache_hits;
-                    id_cache_.pop_front();
+                    id_cache_.pop_back();
                     update_cache(i);
                 } else {                                            //misshit
                     if (full()) {
