@@ -83,8 +83,8 @@ namespace caches {
             for (int i = 0; i < size_data_; ++i) {
                 std::cin >> *(data_array + i);
                 if(!std::cin) {
-                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); //Выкидываем все что ввел пользователь до конца строки
-                    std::cin.clear();  //Убираем флаг ошибки. Теперь состояние потока снова good
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
+                    std::cin.clear();  
                     std::cout << "ERROR!" << std::endl;
                     break;
                 }
@@ -121,10 +121,7 @@ namespace caches {
             elt_id_cache elt {slow_get_page(*(data_array + position)), 
             *(data_array + position), find_next_data_node(position, *(data_array + position))};
             id_cache_.emplace_front(elt);
-            //id_cache_.sort([](const elt_id_cache& first, const elt_id_cache& second)  
-            //{return first.next_data_node >= second.next_data_node;});
             listIt new_elt = id_cache_.begin();
-            listIt next_elt = std::next(new_elt); //for debugging
             while (new_elt->next_data_node <= std::next(new_elt)->next_data_node && new_elt != std::prev(id_cache_.end())) {
                 id_cache_.splice(std::next(new_elt, 2), id_cache_, new_elt, std::next(new_elt));
             }     

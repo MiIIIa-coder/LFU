@@ -17,7 +17,6 @@ int main()
 
     for (int i = 0; i < sz_data; ++i) {
         int key;
-        //std::cin >> key;
 
         key = ideal_cache.get_key(i);
         if (cache.lookup_update(key))
