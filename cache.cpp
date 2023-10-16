@@ -14,7 +14,7 @@ int main()
     std::cout << "Hits of ideal cache: " << ideal_cache.count_hits() << std::endl;
 
     caches::cache_t<int> cache{sz, slow_get_page_int};
-
+    
     for (int i = 0; i < sz_data; ++i) {
         int key;
 

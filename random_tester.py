@@ -1,6 +1,6 @@
 from random import randint
 
-for num_test in range(3):
+for num_test in range(5):
     test_file = open('test_cache' + str(num_test) + '.txt', 'w')
 
     sz_cache = randint(0, 10)

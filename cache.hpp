@@ -2,6 +2,9 @@
 #include <list>
 #include <unordered_map>
 #include <iterator>
+#include <limits>
+
+const int DEBUG = 1;
 
 namespace caches {
 
@@ -23,6 +26,13 @@ namespace caches {
 
             bool full() const { return (cache_.size() == sz_); }
 
+             void show_cache() const {
+                std::cout << "Cache: " << std::endl;
+                for (auto it = cache_.begin(); it != cache_.end(); it++)
+                    std::cout << it->key_elt << " " << it->freq << std::endl; 
+                std::cout << std::endl;
+            }
+
             bool lookup_update(keyT key) {
                 auto hit = hash_.find(key);
 
@@ -33,7 +43,13 @@ namespace caches {
                     }
                     elt_cache_t elt {slow_get_page(key), key, 1};
                     cache_.emplace_front(elt);
-                    hash_.emplace(key, cache_.begin());
+                    auto eltit = cache_.begin();
+                    if (eltit != std::prev(cache_.end())) {
+                        while (eltit->freq >= (std::next(eltit))->freq) {
+                            cache_.splice(std::next(eltit, 2), cache_, eltit, std::next(eltit));
+                        }
+                    }
+                    hash_.emplace(key, eltit);
                     return false;
                 }
 
@@ -45,14 +61,8 @@ namespace caches {
                         cache_.splice(std::next(eltit, 2), cache_, eltit, std::next(eltit));
                     }
                 }
-                return true;
-            }
 
-            void show_cache() const {
-                std::cout << "Cache: " << std::endl;
-                for (auto it = cache_.begin(); it != cache_.end(); it++)
-                    std::cout << it->key_elt << " " << it->freq << std::endl; 
-                std::cout << std::endl;
+                return true;
             }
 
     };
